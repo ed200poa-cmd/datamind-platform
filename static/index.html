@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DataMind AI — ML Analytics Platform</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8fafc; color: #1e293b; }
+
+  .header { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 16px 32px; display: flex; align-items: center; gap: 12px; }
+  .header-logo { width: 36px; height: 36px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 16px; }
+  .header h1 { font-size: 18px; font-weight: 700; color: #1e293b; }
+  .header-sub { font-size: 13px; color: #64748b; margin-left: auto; }
+  .badge { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px 32px; }
+
+  .tabs { display: flex; gap: 4px; background: #f1f5f9; border-radius: 10px; padding: 4px; margin-bottom: 24px; flex-wrap: wrap; }
+  .tab { padding: 8px 18px; border: none; background: transparent; border-radius: 7px; cursor: pointer; font-size: 14px; font-weight: 500; color: #64748b; transition: all 0.15s; }
+  .tab.active { background: #fff; color: #6366f1; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  .tab:hover:not(.active) { color: #334155; background: rgba(255,255,255,0.5); }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .card { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 24px; margin-bottom: 20px; }
+  .card h2 { font-size: 16px; font-weight: 700; color: #1e293b; margin-bottom: 4px; }
+  .card p.sub { font-size: 13px; color: #64748b; margin-bottom: 16px; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  label { font-size: 13px; font-weight: 600; color: #374151; display: block; margin-bottom: 4px; }
+  input, select { width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; background: #fff; color: #1e293b; outline: none; transition: border-color 0.15s; }
+  input:focus, select:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+
+  .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-primary { background: #6366f1; color: #fff; }
+  .btn-primary:hover { background: #4f46e5; }
+  .btn-secondary { background: #f1f5f9; color: #374151; border: 1px solid #e2e8f0; }
+  .btn-secondary:hover { background: #e2e8f0; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .result-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-top: 16px; }
+  .insight-box { background: linear-gradient(135deg, #f0f9ff, #f8f5ff); border: 1px solid #c7d2fe; border-radius: 8px; padding: 16px; margin-top: 12px; }
+  .insight-box h4 { font-size: 13px; font-weight: 700; color: #6366f1; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+  .insight-box p { font-size: 14px; color: #374151; line-height: 1.6; }
+
+  .risk-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 700; }
+  .risk-High { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+  .risk-Medium { background: #fff7ed; color: #d97706; border: 1px solid #fed7aa; }
+  .risk-Low { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .stat-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; text-align: center; }
+  .stat-card .val { font-size: 22px; font-weight: 700; color: #6366f1; }
+  .stat-card .lbl { font-size: 12px; color: #64748b; margin-top: 2px; }
+
+  .forecast-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 8px; }
+  .forecast-table th { background: #f1f5f9; padding: 8px 12px; text-align: left; font-weight: 600; font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+  .forecast-table td { padding: 8px 12px; border-bottom: 1px solid #f1f5f9; }
+  .forecast-table tr:hover td { background: #f8fafc; }
+
+  .segment-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 8px; }
+  .segment-card { border-radius: 8px; padding: 14px; border: 2px solid; }
+  .segment-name { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+  .segment-stat { font-size: 12px; opacity: 0.75; line-height: 1.6; }
+
+  .anomaly-list { margin-top: 8px; max-height: 200px; overflow-y: auto; }
+  .anomaly-item { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: #fef2f2; border-radius: 6px; margin-bottom: 4px; font-size: 13px; }
+  .anomaly-item .txn-id { font-weight: 600; color: #dc2626; }
+  .anomaly-item .amount { font-weight: 700; }
+
+  .upload-zone { border: 2px dashed #c7d2fe; border-radius: 10px; padding: 32px; text-align: center; cursor: pointer; transition: all 0.2s; background: #f8f5ff; }
+  .upload-zone:hover, .upload-zone.drag { border-color: #6366f1; background: #eef2ff; }
+  .upload-zone p { color: #6366f1; font-size: 14px; margin-top: 8px; }
+  .upload-zone .icon { font-size: 36px; }
+
+  .chart-img { max-width: 100%; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 12px; }
+
+  .bubble-panel { background: #1e1b4b; border-radius: 12px; padding: 20px; color: #c7d2fe; font-family: 'Monaco', 'Courier New', monospace; font-size: 13px; }
+  .bubble-panel h3 { color: #a5b4fc; font-size: 14px; margin-bottom: 12px; font-family: inherit; }
+  .bubble-endpoint { margin-bottom: 8px; }
+  .bubble-endpoint .method { color: #6ee7b7; font-weight: 700; }
+  .bubble-endpoint .path { color: #fde68a; }
+  .bubble-endpoint .desc { color: #94a3b8; margin-left: 8px; }
+
+  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .factors-list { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .factor-badge { background: #eef2ff; color: #6366f1; border: 1px solid #c7d2fe; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+
+  .tab-content-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .tag { background: #f1f5f9; color: #475569; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+
+  #toast { position: fixed; bottom: 24px; right: 24px; background: #1e293b; color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 14px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 9999; }
+  #toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">DM</div>
+  <h1>DataMind AI</h1>
+  <span class="badge">ML Platform</span>
+  <span class="header-sub">Built by Edward Kim — AI & ML Developer</span>
+</div>
+
+<div class="container">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('churn')">Churn Prediction</button>
+    <button class="tab" onclick="switchTab('revenue')">Revenue Forecast</button>
+    <button class="tab" onclick="switchTab('segment')">Segmentation</button>
+    <button class="tab" onclick="switchTab('anomaly')">Anomaly Detection</button>
+    <button class="tab" onclick="switchTab('analyze')">CSV Analysis</button>
+    <button class="tab" onclick="switchTab('bubble')">Bubble.io Guide</button>
+  </div>
+
+  <!-- CHURN -->
+  <div id="tab-churn" class="panel active">
+    <div class="card">
+      <div class="tab-content-header">
+        <div>
+          <h2>Churn Prediction</h2>
+          <p class="sub">RandomForest classifier — predicts which customers are likely to cancel</p>
+        </div>
+        <span class="tag">RandomForest</span>
+      </div>
+      <div class="grid3">
+        <div><label>Age</label><input type="number" id="c_age" value="38" min="18" max="90"></div>
+        <div><label>Tenure (months)</label><input type="number" id="c_tenure" value="8" min="1" max="120"></div>
+        <div><label>Monthly Usage (GB)</label><input type="number" id="c_usage" value="5.2" step="0.1" min="0"></div>
+        <div><label>Support Tickets</label><input type="number" id="c_tickets" value="7" min="0" max="50"></div>
+        <div><label>Plan Type</label>
+          <select id="c_plan">
+            <option value="basic">Basic</option>
+            <option value="standard" selected>Standard</option>
+            <option value="premium">Premium</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:flex-end;">
+          <button class="btn btn-primary" id="churn-btn" onclick="runChurn()">
+            <span id="churn-spin" style="display:none" class="spinner"></span>
+            Run Prediction
+          </button>
+        </div>
+      </div>
+      <div id="churn-result" style="display:none">
+        <div class="result-box">
+          <div class="stat-grid">
+            <div class="stat-card"><div class="val" id="cr-prob">—</div><div class="lbl">Churn Probability</div></div>
+            <div class="stat-card"><div class="val" id="cr-risk">—</div><div class="lbl">Risk Level</div></div>
+          </div>
+          <div><strong>Top Predictive Factors:</strong>
+            <div class="factors-list" id="cr-factors"></div>
+          </div>
+        </div>
+        <div class="insight-box">
+          <h4>🤖 Claude AI Insight</h4>
+          <p id="cr-insight">Loading...</p>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Dataset Overview</h2>
+      <p class="sub">Training data — 100 customer records</p>
+      <div class="stat-grid" id="churn-stats"></div>
+    </div>
+  </div>
+
+  <!-- REVENUE -->
+  <div id="tab-revenue" class="panel">
+    <div class="card">
+      <div class="tab-content-header">
+        <div>
+          <h2>Revenue Forecasting</h2>
+          <p class="sub">Linear Regression on 24-month historical data with confidence intervals</p>
+        </div>
+        <span class="tag">LinearRegression</span>
+      </div>
+      <div style="display:flex;align-items:flex-end;gap:12px;">
+        <div>
+          <label>Months to Forecast</label>
+          <select id="rev_months">
+            <option value="3" selected>3 months</option>
+            <option value="6">6 months</option>
+            <option value="12">12 months</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" id="rev-btn" onclick="runRevenue()">
+          <span id="rev-spin" style="display:none" class="spinner"></span>
+          Run Forecast
+        </button>
+      </div>
+      <div id="rev-result" style="display:none">
+        <div class="result-box" style="margin-top:16px">
+          <div class="stat-grid" id="rev-stats"></div>
+          <table class="forecast-table">
+            <thead><tr><th>Period</th><th>Forecast</th><th>Lower Bound</th><th>Upper Bound</th><th>Confidence</th></tr></thead>
+            <tbody id="rev-table"></tbody>
+          </table>
+        </div>
+        <div id="rev-chart-container"></div>
+        <div class="insight-box">
+          <h4>🤖 Claude AI Insight</h4>
+          <p id="rev-insight">Loading...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEGMENTATION -->
+  <div id="tab-segment" class="panel">
+    <div class="card">
+      <div class="tab-content-header">
+        <div>
+          <h2>Customer Segmentation</h2>
+          <p class="sub">K-Means clustering on RFM (Recency · Frequency · Monetary) data</p>
+        </div>
+        <span class="tag">K-Means</span>
+      </div>
+      <div style="display:flex;align-items:flex-end;gap:12px;margin-bottom:16px">
+        <div>
+          <label>Number of Segments</label>
+          <select id="seg_clusters">
+            <option value="3">3 segments</option>
+            <option value="4" selected>4 segments</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" id="seg-btn" onclick="runSegment()">
+          <span id="seg-spin" style="display:none" class="spinner"></span>
+          Run Segmentation
+        </button>
+      </div>
+      <div id="seg-result" style="display:none">
+        <div class="segment-list" id="seg-cards"></div>
+        <div id="seg-chart-container"></div>
+        <div class="insight-box">
+          <h4>🤖 Claude AI Insight</h4>
+          <p id="seg-insight">Loading...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANOMALY -->
+  <div id="tab-anomaly" class="panel">
+    <div class="card">
+      <div class="tab-content-header">
+        <div>
+          <h2>Anomaly Detection</h2>
+          <p class="sub">IsolationForest on 500 transactions — detects fraud and unusual patterns</p>
+        </div>
+        <span class="tag">IsolationForest</span>
+      </div>
+      <div style="display:flex;align-items:flex-end;gap:12px;margin-bottom:16px">
+        <div>
+          <label>Contamination Rate</label>
+          <select id="anom_cont">
+            <option value="0.05" selected>5% (default)</option>
+            <option value="0.1">10%</option>
+            <option value="0.02">2%</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" id="anom-btn" onclick="runAnomaly()">
+          <span id="anom-spin" style="display:none" class="spinner"></span>
+          Detect Anomalies
+        </button>
+      </div>
+      <div id="anom-result" style="display:none">
+        <div class="result-box">
+          <div class="stat-grid" id="anom-stats"></div>
+          <h4 style="font-size:13px;font-weight:700;color:#dc2626;margin-bottom:6px">Flagged Transactions</h4>
+          <div class="anomaly-list" id="anom-list"></div>
+        </div>
+        <div id="anom-chart-container"></div>
+        <div class="insight-box">
+          <h4>🤖 Claude AI Insight</h4>
+          <p id="anom-insight">Loading...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CSV ANALYSIS -->
+  <div id="tab-analyze" class="panel">
+    <div class="card">
+      <h2>CSV Data Analysis</h2>
+      <p class="sub">Upload any CSV — automated EDA, statistics, charts, and Claude AI insights</p>
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('csv-file').click()"
+           ondragover="event.preventDefault();this.classList.add('drag')"
+           ondragleave="this.classList.remove('drag')"
+           ondrop="handleDrop(event)">
+        <div class="icon">📊</div>
+        <p>Click or drag & drop a CSV file</p>
+        <p style="color:#94a3b8;font-size:12px;margin-top:4px">Try the demo files: customers.csv, revenue.csv, transactions.csv</p>
+      </div>
+      <input type="file" id="csv-file" accept=".csv" style="display:none" onchange="handleFile(this.files[0])">
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-secondary" onclick="loadDemoFile('customers')">Load customers.csv</button>
+        <button class="btn btn-secondary" onclick="loadDemoFile('revenue')">Load revenue.csv</button>
+        <button class="btn btn-secondary" onclick="loadDemoFile('transactions')">Load transactions.csv</button>
+      </div>
+      <div id="analyze-result" style="display:none">
+        <div class="result-box" style="margin-top:16px">
+          <div class="stat-grid" id="analyze-stats"></div>
+          <div id="analyze-eda"></div>
+          <div id="analyze-charts"></div>
+        </div>
+        <div class="insight-box">
+          <h4>🤖 Claude AI Insight</h4>
+          <p id="analyze-insight">Loading...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BUBBLE.IO GUIDE -->
+  <div id="tab-bubble" class="panel">
+    <div class="card">
+      <h2>Bubble.io Integration Guide</h2>
+      <p class="sub">This API is designed to plug directly into Bubble.io via the API Connector plugin</p>
+      <div class="bubble-panel">
+        <h3>// Bubble-Compatible Endpoints — all return { status, data, message, timestamp }</h3>
+        <div class="bubble-endpoint"><span class="method">GET</span> <span class="path">/bubble/predict/churn?customer_id=123&age=35&tenure_months=12&support_tickets=3&plan_type=standard</span></div>
+        <div class="bubble-endpoint"><span class="method">GET</span> <span class="path">/bubble/predict/revenue?months_ahead=3</span></div>
+        <div class="bubble-endpoint"><span class="method">GET</span> <span class="path">/bubble/segment/customers</span></div>
+        <div class="bubble-endpoint"><span class="method">GET</span> <span class="path">/bubble/detect/anomalies</span></div>
+        <div class="bubble-endpoint"><span class="method">POST</span> <span class="path">/bubble/upload-csv</span> <span class="desc">// multipart/form-data</span></div>
+        <div class="bubble-endpoint"><span class="method">GET</span> <span class="path">/bubble/insights/{analysis_id}</span></div>
+        <div class="bubble-endpoint"><span class="method">GET</span> <span class="path">/bubble/chart/{chart_id}</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Setup Steps in Bubble.io</h2>
+      <ol style="padding-left:20px;line-height:2.2;font-size:14px;color:#374151">
+        <li>Install <strong>API Connector</strong> plugin in your Bubble app</li>
+        <li>Click <strong>Add another API</strong> → Name it "DataMind AI"</li>
+        <li>Set <strong>Root URL</strong>: <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px">https://datamind-production.up.railway.app</code></li>
+        <li>Add a new call: <strong>GET /bubble/predict/churn</strong> — mark parameters as dynamic</li>
+        <li>Click <strong>Initialize call</strong> — Bubble auto-detects the response schema</li>
+        <li>Use <strong>Get data from an external API</strong> in your workflows</li>
+        <li>Map <code>data.prediction.churn_probability</code> to a Bubble text/number field</li>
+        <li>Display <code>data.ai_insight</code> in a multi-line text element</li>
+      </ol>
+    </div>
+    <div class="card">
+      <div class="grid2">
+        <div>
+          <h2>Industry Use Cases</h2>
+          <p class="sub">Which models solve which problems</p>
+          <ul style="font-size:14px;line-height:2;color:#374151;padding-left:16px">
+            <li><strong>SaaS / Subscription:</strong> Churn prediction → reduce cancellations</li>
+            <li><strong>E-commerce:</strong> Segmentation → personalize campaigns</li>
+            <li><strong>Fintech / Banking:</strong> Anomaly detection → fraud prevention</li>
+            <li><strong>Retail / CPG:</strong> Revenue forecasting → inventory planning</li>
+            <li><strong>Healthcare:</strong> CSV analysis → patient outcome patterns</li>
+            <li><strong>Real Estate:</strong> Revenue forecasting → price trend analysis</li>
+          </ul>
+        </div>
+        <div>
+          <h2>Cost Comparison</h2>
+          <p class="sub">This platform vs. traditional data science</p>
+          <table class="forecast-table" style="margin-top:8px">
+            <thead><tr><th>Option</th><th>Cost/Month</th><th>Setup Time</th></tr></thead>
+            <tbody>
+              <tr><td><strong>DataMind AI</strong></td><td style="color:#16a34a;font-weight:700">~$5</td><td>Minutes</td></tr>
+              <tr><td>Junior Data Scientist</td><td style="color:#dc2626">$7,000+</td><td>Weeks</td></tr>
+              <tr><td>Analytics Agency</td><td style="color:#dc2626">$5,000–20,000</td><td>Months</td></tr>
+              <tr><td>Enterprise BI Tool</td><td style="color:#d97706">$500–2,000</td><td>Days</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const API = '';
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+function toast(msg, duration = 3000) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), duration);
+}
+
+function fmt(n) { return '$' + Number(n).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
+function pct(n) { return (n * 100).toFixed(1) + '%'; }
+
+function setLoading(btnId, spinId, loading) {
+  document.getElementById(btnId).disabled = loading;
+  document.getElementById(spinId).style.display = loading ? 'inline-block' : 'none';
+}
+
+async function runChurn() {
+  setLoading('churn-btn', 'churn-spin', true);
+  try {
+    const res = await fetch(API + '/predict/churn', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        age: +document.getElementById('c_age').value,
+        tenure_months: +document.getElementById('c_tenure').value,
+        monthly_usage_gb: +document.getElementById('c_usage').value,
+        support_tickets: +document.getElementById('c_tickets').value,
+        plan_type: document.getElementById('c_plan').value,
+      })
+    });
+    const d = await res.json();
+    const p = d.prediction;
+
+    document.getElementById('cr-prob').textContent = p.churn_probability_pct;
+    document.getElementById('cr-risk').innerHTML = `<span class="risk-badge risk-${p.risk_level}">${p.risk_level}</span>`;
+    const fl = document.getElementById('cr-factors');
+    fl.innerHTML = p.top_factors.map(f => `<span class="factor-badge">${f.feature} (${(f.importance*100).toFixed(1)}%)</span>`).join('');
+    document.getElementById('cr-insight').textContent = d.ai_insight || 'No insight returned.';
+
+    // Dataset stats
+    const s = d.dataset_stats;
+    document.getElementById('churn-stats').innerHTML = [
+      ['Total Customers', s.total_customers],
+      ['Churned', s.churned],
+      ['Churn Rate', s.churn_rate_pct],
+      ['Avg Tenure', s.avg_tenure_months + ' mo'],
+      ['High Risk Est.', s.high_risk_estimate],
+    ].map(([l,v]) => `<div class="stat-card"><div class="val">${v}</div><div class="lbl">${l}</div></div>`).join('');
+
+    document.getElementById('churn-result').style.display = 'block';
+    toast('Churn prediction complete');
+  } catch(e) { toast('Error: ' + e.message); }
+  setLoading('churn-btn', 'churn-spin', false);
+}
+
+async function runRevenue() {
+  setLoading('rev-btn', 'rev-spin', true);
+  try {
+    const months = +document.getElementById('rev_months').value;
+    const res = await fetch(API + '/predict/revenue', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ months_ahead: months })
+    });
+    const d = await res.json();
+    const f = d.forecast;
+    const s = d.dataset_stats;
+
+    document.getElementById('rev-stats').innerHTML = [
+      ['Avg Monthly', fmt(s.avg_monthly_revenue)],
+      ['Latest', fmt(s.latest_revenue)],
+      ['Total Growth', s.growth_total_pct + '%'],
+      ['Trend', f.trend_direction],
+      ['R² Score', f.r_squared],
+    ].map(([l,v]) => `<div class="stat-card"><div class="val" style="font-size:16px">${v}</div><div class="lbl">${l}</div></div>`).join('');
+
+    document.getElementById('rev-table').innerHTML = f.forecasts.map(fc =>
+      `<tr><td>${fc.period}</td><td style="font-weight:700;color:#6366f1">${fmt(fc.forecast)}</td>
+       <td>${fmt(fc.lower_bound)}</td><td>${fmt(fc.upper_bound)}</td><td>${fc.confidence}</td></tr>`
+    ).join('');
+
+    document.getElementById('rev-insight').textContent = d.ai_insight || 'No insight returned.';
+    document.getElementById('rev-result').style.display = 'block';
+
+    if (d.chart_id) {
+      const cr = await fetch(API + '/charts/' + d.chart_id);
+      const cd = await cr.json();
+      document.getElementById('rev-chart-container').innerHTML = `<img class="chart-img" src="data:image/png;base64,${cd.data}" alt="Revenue Forecast Chart">`;
+    }
+    toast('Revenue forecast complete');
+  } catch(e) { toast('Error: ' + e.message); }
+  setLoading('rev-btn', 'rev-spin', false);
+}
+
+async function runSegment() {
+  setLoading('seg-btn', 'seg-spin', true);
+  try {
+    const nc = +document.getElementById('seg_clusters').value;
+    const res = await fetch(API + '/segment', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ n_clusters: nc })
+    });
+    const d = await res.json();
+    const segs = d.segmentation.segments;
+
+    document.getElementById('seg-cards').innerHTML = Object.entries(segs).map(([name, s]) =>
+      `<div class="segment-card" style="border-color:${s.color};background:${s.color}15">
+        <div class="segment-name" style="color:${s.color}">${name}</div>
+        <div class="segment-stat">${s.count} customers (${s.pct})<br>
+        Avg spend: ${fmt(s.avg_monetary)}<br>
+        Avg recency: ${s.avg_recency_days} days<br>
+        Avg frequency: ${s.avg_frequency}×</div>
+        <div style="font-size:11px;margin-top:6px;opacity:0.7">${s.description}</div>
+      </div>`
+    ).join('');
+
+    document.getElementById('seg-insight').textContent = d.ai_insight || 'No insight returned.';
+    document.getElementById('seg-result').style.display = 'block';
+
+    if (d.chart_id) {
+      const cr = await fetch(API + '/charts/' + d.chart_id);
+      const cd = await cr.json();
+      document.getElementById('seg-chart-container').innerHTML = `<img class="chart-img" src="data:image/png;base64,${cd.data}" alt="Segmentation Chart">`;
+    }
+    toast('Segmentation complete');
+  } catch(e) { toast('Error: ' + e.message); }
+  setLoading('seg-btn', 'seg-spin', false);
+}
+
+async function runAnomaly() {
+  setLoading('anom-btn', 'anom-spin', true);
+  try {
+    const cont = +document.getElementById('anom_cont').value;
+    const res = await fetch(API + '/detect-anomalies', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ contamination: cont })
+    });
+    const d = await res.json();
+    const r = d.anomaly_detection;
+
+    document.getElementById('anom-stats').innerHTML = [
+      ['Total Transactions', r.total_transactions],
+      ['Anomalies Found', r.anomalies_found],
+      ['Anomaly Rate', r.anomaly_rate_pct],
+      ['Avg Anomaly $', fmt(r.avg_anomaly_amount)],
+      ['Avg Normal $', fmt(r.avg_normal_amount)],
+    ].map(([l,v]) => `<div class="stat-card"><div class="val" style="font-size:16px">${v}</div><div class="lbl">${l}</div></div>`).join('');
+
+    document.getElementById('anom-list').innerHTML = r.anomalies.slice(0,15).map(a =>
+      `<div class="anomaly-item">
+        <span class="txn-id">TXN #${a.transaction_id}</span>
+        <span>${a.merchant_category || '—'} · Hr ${a.hour_of_day} · ${a.country || '—'}</span>
+        <span class="amount" style="color:#dc2626">${fmt(a.amount)}</span>
+      </div>`
+    ).join('');
+
+    document.getElementById('anom-insight').textContent = d.ai_insight || 'No insight returned.';
+    document.getElementById('anom-result').style.display = 'block';
+
+    if (d.chart_id) {
+      const cr = await fetch(API + '/charts/' + d.chart_id);
+      const cd = await cr.json();
+      document.getElementById('anom-chart-container').innerHTML = `<img class="chart-img" src="data:image/png;base64,${cd.data}" alt="Anomaly Detection Chart">`;
+    }
+    toast('Anomaly detection complete');
+  } catch(e) { toast('Error: ' + e.message); }
+  setLoading('anom-btn', 'anom-spin', false);
+}
+
+async function uploadAndAnalyze(file) {
+  const form = new FormData();
+  form.append('file', file);
+  document.getElementById('upload-zone').innerHTML = '<div class="icon">⏳</div><p>Analyzing ' + file.name + '...</p>';
+  try {
+    const res = await fetch(API + '/analyze', { method: 'POST', body: form });
+    const d = await res.json();
+    if (!res.ok) { toast('Error: ' + (d.detail || d.error)); return; }
+
+    const shape = d.stats.shape;
+    document.getElementById('analyze-stats').innerHTML = [
+      ['Rows', shape.rows],
+      ['Columns', shape.columns],
+      ['Numeric', d.stats.numeric_columns.length],
+      ['Categorical', d.stats.categorical_columns.length],
+      ['Data Quality', d.eda.data_quality_score],
+    ].map(([l,v]) => `<div class="stat-card"><div class="val" style="font-size:16px">${v}</div><div class="lbl">${l}</div></div>`).join('');
+
+    const recs = d.eda.recommendations.map(r => `<li style="margin-bottom:6px">${r}</li>`).join('');
+    document.getElementById('analyze-eda').innerHTML = `<ul style="padding-left:20px;font-size:14px;color:#374151;margin-top:8px;line-height:1.8">${recs}</ul>`;
+    document.getElementById('analyze-insight').textContent = d.ai_insight || 'No insight returned.';
+
+    const chartContainer = document.getElementById('analyze-charts');
+    chartContainer.innerHTML = '';
+    for (const chart of d.charts) {
+      const cr = await fetch(API + '/charts/' + chart.chart_id);
+      const cd = await cr.json();
+      chartContainer.innerHTML += `<img class="chart-img" src="data:image/png;base64,${cd.data}" alt="${chart.type} — ${chart.column}">`;
+    }
+
+    document.getElementById('analyze-result').style.display = 'block';
+    toast('Analysis complete — ' + shape.rows + ' rows processed');
+  } catch(e) { toast('Error: ' + e.message); }
+  document.getElementById('upload-zone').innerHTML = '<div class="icon">📊</div><p>Click or drag & drop a CSV file</p>';
+}
+
+function handleFile(file) { if (file) uploadAndAnalyze(file); }
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file && file.name.endsWith('.csv')) uploadAndAnalyze(file);
+  else toast('Please drop a .csv file');
+}
+
+async function loadDemoFile(name) {
+  try {
+    const res = await fetch(API + '/demo_data/' + name + '.csv');
+    const text = await res.text();
+    const blob = new Blob([text], { type: 'text/csv' });
+    const file = new File([blob], name + '.csv', { type: 'text/csv' });
+    uploadAndAnalyze(file);
+  } catch(e) {
+    toast('Could not load demo file — try uploading manually');
+  }
+}
+
+// Auto-run churn on load for instant demo
+window.addEventListener('load', () => setTimeout(runChurn, 500));
+</script>
+</body>
+</html>
