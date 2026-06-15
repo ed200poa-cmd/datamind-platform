@@ -1,32 +1,30 @@
 import os
-import json
-from anthropic import AsyncAnthropic
+from langchain_anthropic import ChatAnthropic
+from langchain_core.messages import HumanMessage, SystemMessage
 
-_client: AsyncAnthropic | None = None
+_SYSTEM = (
+    "You are a senior data scientist giving clear, actionable business insights. "
+    "Be concise and direct. Use plain English. No jargon. "
+    "Always structure with: 1) Key finding, 2) Business impact, 3) Recommended action."
+)
 
 
-def _get_client() -> AsyncAnthropic | None:
-    global _client
-    if _client is None and os.getenv("ANTHROPIC_API_KEY"):
-        _client = AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-    return _client
+def _get_llm() -> ChatAnthropic | None:
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        return None
+    return ChatAnthropic(
+        model="claude-haiku-4-5-20251001",
+        anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"),
+        max_tokens=512,
+    )
 
 
 async def _call_claude(prompt: str) -> str:
-    client = _get_client()
-    if not client:
+    llm = _get_llm()
+    if not llm:
         return "Claude API not configured. Set ANTHROPIC_API_KEY to enable AI insights."
-    msg = await client.messages.create(
-        model="claude-haiku-4-5-20251001",
-        max_tokens=512,
-        messages=[{"role": "user", "content": prompt}],
-        system=(
-            "You are a senior data scientist giving clear, actionable business insights. "
-            "Be concise and direct. Use plain English. No jargon. "
-            "Always structure with: 1) Key finding, 2) Business impact, 3) Recommended action."
-        ),
-    )
-    return msg.content[0].text
+    resp = await llm.ainvoke([SystemMessage(content=_SYSTEM), HumanMessage(content=prompt)])
+    return resp.content
 
 
 async def churn_insights(result: dict) -> str:
